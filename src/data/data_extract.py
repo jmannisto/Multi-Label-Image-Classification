@@ -25,7 +25,16 @@ for index, key in enumerate(label_list):
     for item in label_list[key]:
         data.at[int(item), new_keys[index]]=1
 
+#add image names
+filename = [os.path.basename(x) for x in glob.glob('../../data/external/images/*')]
+data['image_name'] = filename
+
 #save dataframe
 data.to_pickle("DL_project_dataframe.pickle")
 
-## TODO: update and include index or column with full image name
+#save dataframe to csv
+data.to_csv("../../data/interim/DL_project_dataframe.csv")
+
+#TODO: update and include index or column with full image name
+
+

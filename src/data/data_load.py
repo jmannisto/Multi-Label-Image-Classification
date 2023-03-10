@@ -1,8 +1,10 @@
 import numpy as np
+import pandas as pd
 import os
 from glob import glob
 from torchvision.io import read_image
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 
 data = pd.read_pickle("../../data/interim/DL_project_dataframe.pickle")
 classes = ['clouds','male', 'bird', 'dog', 'river', 'portrait', 'baby', 'night', 'people', 'female',
@@ -11,17 +13,20 @@ classes = ['clouds','male', 'bird', 'dog', 'river', 'portrait', 'baby', 'night',
 #TODO: consider having a specific type of shuffle such that each category is somewhat well represented across all?
 #-- train-dev-test split --#
 #split = .8/.1/.1
-files = glob('../data/external/images/*.jpg')
+files = glob('../../data/external/images/*.jpg')
 shuffle = np.random.RandomState(seed=42).permutation(len(files))
-for i in ['train', 'valid', 'test']:
-    os.mkdir(os.path.join('../../data/interim/', i))
+try:
+    for i in ['train', 'valid', 'test']:
+        os.mkdir(os.path.join('../../data/interim/', i))
+except FileExistsError:
+    pass
 
 #TODO: Cite, heavily inspired by: https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
 #Valid set up
 valid_dict = {}
 valid_file_names = []
 for i in shuffle[:2000]:
-    file_name = files[i].split('/')[-1] #not exactly sure what this does
+    file_name = os.path.basename(files[i]) #not exactly sure what this does
     labels = np.array(data[data['image_name']==file_name][classes]).tolist() #do I actually need the numpy arr thing?
     valid_dict[file_name] = labels
     valid_file_names.append(file_name)
@@ -32,7 +37,7 @@ valid_df = pd.DataFrame.from_dict(valid_dict, orient='index', columns = ['labels
 test_dict = {}
 test_file_names = []
 for i in shuffle[2000:4000]:
-    file_name = files[i].split('/')[-1] #get name after final /
+    file_name = os.path.basename(files[i]) #get name after final /
     labels = np.array(data[data['image_name'] == file_name][classes]).tolist()
     test_dict[file_name] = labels
     test_file_names.append(file_name)
@@ -43,7 +48,7 @@ test_df = pd.DataFrame.from_dict(test_dict, orient='index', columns=['labels'])
 train_dict = {}
 train_file_names = []
 for i in shuffle[4000:]:
-    file_name = files[i].split('/')[-1]
+    file_name = os.path.basename(files[i])
     labels = np.array(data[data['image_name']==file_name][classes]).tolist()
     train_dict[file_name] = labels
     train_file_names.append(file_name)
@@ -85,7 +90,7 @@ valid_data = MultiLabelData(valid_df, '../data/interim/valid/')
 test_data = MultiLabelData(test_df, '../data/interim/test/')
 train_data = MultiLabelData(train_df, '../data/interim/train/')
 
-train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-valid_dataloader = DataLoader(valid_dataset, batch_size = 32, shuffle = False)
+train_dataloader = DataLoader(train_data, batch_size=32, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=32, shuffle=False)
+valid_dataloader = DataLoader(valid_data, batch_size = 32, shuffle = False)
 

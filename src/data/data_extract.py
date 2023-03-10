@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 import glob
 label_list = {} #list to store all files
@@ -30,7 +31,7 @@ filename = [os.path.basename(x) for x in glob.glob('../../data/external/images/*
 data['image_name'] = filename
 
 #save dataframe
-data.to_pickle("DL_project_dataframe.pickle")
+data.to_pickle("../../data/interim/DL_project_dataframe.pickle")
 
 #save dataframe to csv
 data.to_csv("../../data/interim/DL_project_dataframe.csv")

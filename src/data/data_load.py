@@ -3,6 +3,7 @@ import os
 from glob import glob
 from torchvision.io import read_image
 from torch.utils.data import DataLoader
+from torch.utils.data import DataSet
 
 data = pd.read_pickle("../../data/interim/DL_project_dataframe.pickle")
 classes = ['clouds','male', 'bird', 'dog', 'river', 'portrait', 'baby', 'night', 'people', 'female',
@@ -11,16 +12,24 @@ classes = ['clouds','male', 'bird', 'dog', 'river', 'portrait', 'baby', 'night',
 #TODO: consider having a specific type of shuffle such that each category is somewhat well represented across all?
 #-- train-dev-test split --#
 #split = .8/.1/.1
-files = glob('../data/external/images/*.jpg')
+#TODO: fetch_data for source code for data
+files = glob('../../data/external/images/*.jpg')
 shuffle = np.random.RandomState(seed=42).permutation(len(files))
-for i in ['train', 'valid', 'test']:
-    os.mkdir(os.path.join('../../data/interim/', i))
+try:
+    for i in ['train', 'valid', 'test']:
+        os.mkdir(os.path.join('../../data/interim/', i))
+except:
+    pass
 
 #TODO: Cite, heavily inspired by: https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
 #Valid set up
 valid_dict = {}
 valid_file_names = []
 for i in shuffle[:2000]:
+    #TODO: issue with mac v. windows operation for identifying file name
+    #os.path.basename??
+    #how to fix??
+    #TODO fix these as well
     file_name = files[i].split('/')[-1] #not exactly sure what this does
     labels = np.array(data[data['image_name']==file_name][classes]).tolist() #do I actually need the numpy arr thing?
     valid_dict[file_name] = labels
@@ -43,6 +52,7 @@ test_df = pd.DataFrame.from_dict(test_dict, orient='index', columns=['labels'])
 train_dict = {}
 train_file_names = []
 for i in shuffle[4000:]:
+    #TODO fix these
     file_name = files[i].split('/')[-1]
     labels = np.array(data[data['image_name']==file_name][classes]).tolist()
     train_dict[file_name] = labels
@@ -81,9 +91,9 @@ class MultiLabelData(Dataset):
 
         return sample
 
-valid_data = MultiLabelData(valid_df, '../data/interim/valid/')
-test_data = MultiLabelData(test_df, '../data/interim/test/')
-train_data = MultiLabelData(train_df, '../data/interim/train/')
+valid_dataset = MultiLabelData(valid_df, '../data/interim/valid/')
+test_dataset = MultiLabelData(test_df, '../data/interim/test/')
+train_dataset = MultiLabelData(train_df, '../data/interim/train/')
 
 train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)

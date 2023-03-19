@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
-
+import os
 import glob
+
 label_list = {} #list to store all files
 
-directory = "../../data/external/annotations" #"./dl2021-image-corpus-proj/annotations"
+directory = "../data/external/annotations" #"./dl2021-image-corpus-proj/annotations"
 for n,filename in enumerate(glob.iglob(f'{directory}/*')):
     with open(filename) as f:
-        label_list[filename[::-1].partition('/')[0][::-1]] = f.read().strip().split('\n')
-        #overly complicate manner of reversing the string file name, finding the first instance of / and then taking
-        #the text before that instance and reversing it again to get the actual file name
+        label_list[filename.split('/')[-1]] = f.read().strip().split('\n')
+        #TODO: figure out how to get the .txt out
 
 new_keys = ['clouds','','male', 'bird', 'dog', 'river', 'portrait', 'baby', 'night', 'people', 'female',
             'sea', 'tree', 'car', 'flower']
@@ -28,13 +28,8 @@ for index, key in enumerate(label_list):
 #add image names
 filename = [os.path.basename(x) for x in glob.glob('../../data/external/images/*')]
 data['image_name'] = filename
-
-#save dataframe
-data.to_pickle("DL_project_dataframe.pickle")
+#save dataframe to pickle
+data.to_pickle("../../data/interim/DL_project_dataframe.pickle")
 
 #save dataframe to csv
 data.to_csv("../../data/interim/DL_project_dataframe.csv")
-
-#TODO: update and include index or column with full image name
-
-

@@ -1,7 +1,9 @@
-DL_Project
+Multilabel Image Classification
 ==============================
 
-DMulti-Label Image Classification
+Project Report: [Multilabel Image Classification Report](https://github.com/jmannisto/Multi-Label-Image-Classification/blob/main/docs/Hovland_Mannisto_Deep_Learning_Project.pdf) 
+
+Final Model Predictions:[Final_Predictions.tsv](https://github.com/jmannisto/Multi-Label-Image-Classification/blob/main/docs/final_predictions.tsv)
 
 Project Organization
 ------------

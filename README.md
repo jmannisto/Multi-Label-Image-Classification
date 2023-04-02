@@ -41,6 +41,7 @@ Project Organization
         └── models         <- Scripts to train models and then use trained models to make
             │                 predictions
             ├── train_model.py <- general script for training and evaluating model
+            ├── train_model_threshold.py <- alternative script for training and evaluating model with functionality for setting prediction threshold
             └── predict_labels.py <- script for predicting labels for 
     
 --------

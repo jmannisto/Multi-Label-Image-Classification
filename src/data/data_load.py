@@ -55,21 +55,27 @@ def _make_dataset(shuffle, start, end, dest_path, files):
 """
 creates corresponding data frames with file name in one column and array of multi-hot encoded vectors in other column
 image files are moved to their corresponding test, valid, or train folder in data/interim and the dataframes are pickled there too
+
+Taken and modified from:
+https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
 """
-    #TODO: Cite, heavily inspired by: https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
     data_dict = {}
     data_file_names = []
     for i in shuffle[start:end]:
         file_name = os.path.basename(files[i])
-        labels = np.array(data[data['image_name'] == file_name][classes]).tolist() #actually need np.arr?
+        labels = np.array(data[data['image_name'] == file_name][classes]).tolist()
         data_dict[file_name] = labels
         data_file_names.append(file_name)
-        os.rename(files[i], os.path.join(dest_path, file_name)) #('../../data/interim/valid', file_name))
+        os.rename(files[i], os.path.join(dest_path, file_name)) 
     return pd.DataFrame.from_dict(data_dict, orient='index', columns=['labels'])
 
-
-#TODO: CITE: https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
 class MultiLabelData(Dataset):
+"""
+Modified dataset class for multilabel data
+
+Modified from:
+https://thevatsalsaglani.medium.com/training-and-deploying-a-multi-label-image-classifier-using-pytorch-flask-reactjs-and-firebase-c39c96f9c427
+"""
 
     def __init__(self, dataframe, folder_dir, transform=None):
         self.dataframe = dataframe
@@ -85,12 +91,13 @@ class MultiLabelData(Dataset):
         #TODO: see if performance changes if everything is converted to greyscale
         image = read_image(
             f"{self.folder_dir}/{self.file_names[index]}").float()
-        #cite: https://discuss.pytorch.org/t/convert-grayscale-images-to-rgb/113422/2
+        """
+        grayscale conversion taken from PyTorch discussion:
+        https://discuss.pytorch.org/t/convert-grayscale-images-to-rgb/113422/2
+        """
         convert = transforms.Lambda(lambda x: x.repeat(3, 1, 1) if x.size(0)==1 else x)
         image = convert(image)
         label = self.labels[index]
-        #image_pic = Image.open(os.path.join(self.folder_dir, self.file_names[index]))
-        #TODO: convert label to tensor
         sample = {'image': image, 'label': np.array(label, dtype=np.float32)}
         if self.transform:
             image = self.transform(sample['image'])
@@ -99,9 +106,7 @@ class MultiLabelData(Dataset):
         return sample
 
 def get_dataset(bs, transforms = None):
-    #TODO: figure out what are actual parameters we want here
-    #TODO: I want to set it up such that we can change the randomness and have different datasets pulled each time...
-    #added:
+    #TODO: set it up such that we can change the randomness and have different datasets pulled each time
     full_path = os.path.dirname(__file__)
     train_df, dev_df, test_df = _get_data(os.path.join(os.path.dirname(__file__),'../../data/external/images/'))
 
@@ -111,7 +116,6 @@ def get_dataset(bs, transforms = None):
     test_dataset = MultiLabelData(test_df, os.path.join(full_path, '../../data/interim/test/'), transforms)
 
     print("Getting loaders")
-    #TODO: possibly edit batch size based on argument
     train_loader = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     dev_loader = DataLoader(dev_dataset, batch_size = bs, shuffle = False)
     test_loader = DataLoader(test_dataset, batch_size=bs, shuffle=False)
